@@ -57,7 +57,7 @@ if __name__ == '__main__':
     import shutil
 
     source_bad_pic_root_path = './data_split/bad'
-    source_xml_root_path = '/home/maozezhong/Desktop/tianchi_detect/data_voc/VOC2007/Annotations'
+    source_xml_root_path = './tianchi_detect/data_voc/VOC2007/Annotations'
 
     target_pic_root_path = './data_croped'  #只包括有瑕疵的图片
     if os.path.exists(target_pic_root_path):

@@ -1,4 +1,4 @@
-# 待修改
+# -*- coding=utf-8 -*-
 def add_attention(base_model):
     '''
     输入:
@@ -18,19 +18,23 @@ def add_attention(base_model):
         res = K.sum(input_tensor, axis=-2)
         return res
 
-    from keras.layers import merge, Reshape, RepeatVector, Permute, Lambda
+    from keras.layers import multiply, Reshape, RepeatVector, Permute, Lambda, Dense, BatchNormalization
+    from keras.layers.pooling import GlobalAveragePooling2D
+    from keras.models import Model
+
     x = base_model.output
-    _, H, W, C = x.shape
-    x = Reshape((1, H*W, 2048))(x)   #[None, 7, 7, 2048] -> [None, 1, 49, 2048]
-    x = Conv2D(1, (1,1), activation=softMaxAxis(-2), strides=(1,1), name='attention_feature')(x)    #[None, 1, 49, 2048] -> [None, 1, 49, 1]
-    x = Reshape((49,))(x)           #[None, 1, 49, 1] -> [None, 49]
-    x = RepeatVector(2048)(x)       #[None, 49] -> [None, 2048, 49]
-    x = Permute((2,1))(x)           #[None, 2048, 49] -> [None, 49, 2048]
-    x = Reshape((7, 7, 2048))(x)    #[None, 49, 2048] -> [None, 7, 7, 2048]
-    x = merge([base_model.output, x], name='attention_mul', mode='mul') #点乘
-    x = Reshape((49, 2048))(x)      #[None, 7, 7, 2048] -> [None, 49, 2048]
-    x = Lambda(getSum)(x)           #对[49]这个位置求和并且reshape输出为[None, 2048]
-    x = Reshape((1,1,2048))(x)      #[None, 2048] -> [None, 1, 1, 2048]
+    print(x.shape)
+    _, H,W,C = x.shape
+    H = int(H)
+    W = int(W)
+    C = int(C)
+    x = GlobalAveragePooling2D(name='avg_pool_for_attention')(x)    #[None, 7, 7, 2048] -> [None, 1, 1, 2048]
+    x = Dense(H*W, activation='softmax', name='attention_w')(x)     #全连接层，输出系数
+    x = Reshape((H*W,))(x)                                          #[None, 1, 49, 1] -> [None, 49]
+    x = RepeatVector(C)(x)                                          #[None, 49] -> [None, 2048, 49]
+    x = Permute((2,1))(x)                                           #[None, 2048, 49] -> [None, 49, 2048]
+    x = Reshape((H, W, C))(x)                                       #[None, 49, 2048] -> [None, 7, 7, 2048]
+    x = multiply([base_model.output, x])                            #逐个元素乘积
     base_model = Model(inputs=base_model.input, outputs=x)
     ############################## end of attention #########################
 

@@ -9,7 +9,7 @@
     - [cutout](https://arxiv.org/abs/1708.04552)
 - KITTI_2_VOC : 将KITTI数据形式转换为VOC形式
 - VOC_2_COCO : 讲VOC形式数据转换为COCO格式
-- Attention : feature map Attention
+- Attention : feature map Attention && channel attention (SE)
 
 ## To_Do_List
 - [ ] GAN with LSR for data augment

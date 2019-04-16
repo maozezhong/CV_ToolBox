@@ -348,7 +348,7 @@ class DataAugmentForObjectDetection():
             horizon = False
         h,w,_ = img.shape
         if horizon: #水平翻转
-            flip_img =  cv2.flip(flip_img, -1)
+            flip_img =  cv2.flip(flip_img, 1)   #1是水平，-1是水平垂直
         else:
             flip_img = cv2.flip(flip_img, 0)
 
